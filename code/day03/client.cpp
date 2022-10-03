@@ -1,45 +1,57 @@
-#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <string.h>
-#include <unistd.h>
-#include "util.h"
 
-#define BUFFER_SIZE 1024 
+int main(int argc, char *argv[])
+{
+  if (argc != 3)
+  {
+    printf("usage:./tcpclient ip port\n"); return -1;
+  }
 
-int main() {
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    errif(sockfd == -1, "socket create error");
+  int sockfd;
+  struct sockaddr_in servaddr;
+  char buf[1024];
+ 
+  if ((sockfd=socket(AF_INET,SOCK_STREAM,0))<0) { printf("socket() failed.\n"); return -1; }
+	
+  memset(&servaddr,0,sizeof(servaddr));
+  servaddr.sin_family=AF_INET;
+  servaddr.sin_port=htons(atoi(argv[2]));
+  servaddr.sin_addr.s_addr=inet_addr(argv[1]);
 
-    struct sockaddr_in serv_addr;
-    bzero(&serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    serv_addr.sin_port = htons(8888);
+  if (connect(sockfd, (struct sockaddr *)&servaddr,sizeof(servaddr)) != 0)
+  {
+    printf("connect(%s:%s) failed.\n",argv[1],argv[2]); close(sockfd);  return -1;
+  }
 
-    errif(connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) == -1, "socket connect error");
-    
-    while(true){
-        char buf[BUFFER_SIZE];  //在这个版本，buf大小必须大于或等于服务器端buf大小，不然会出错，想想为什么？
-        bzero(&buf, sizeof(buf));
-        scanf("%s", buf);
-        ssize_t write_bytes = write(sockfd, buf, sizeof(buf));
-        if(write_bytes == -1){
-            printf("socket already disconnected, can't write any more!\n");
-            break;
-        }
-        bzero(&buf, sizeof(buf));
-        ssize_t read_bytes = read(sockfd, buf, sizeof(buf));
-        if(read_bytes > 0){
-            printf("message from server: %s\n", buf);
-        }else if(read_bytes == 0){
-            printf("server socket disconnected!\n");
-            break;
-        }else if(read_bytes == -1){
-            close(sockfd);
-            errif(true, "socket read error");
-        }
+  printf("connect ok.\n");
+
+  for (int ii=0;ii<10000;ii++)
+  {
+    // ŽÓÃüÁîÐÐÊäÈëÄÚÈÝ¡£
+    memset(buf,0,sizeof(buf));
+    printf("please input:"); scanf("%s",buf);
+    // sprintf(buf,"1111111111111111111111ii=%08d",ii);
+
+    if (write(sockfd,buf,strlen(buf)) <=0)
+    { 
+      printf("write() failed.\n");  close(sockfd);  return -1;
     }
-    close(sockfd);
-    return 0;
-}
+		
+    memset(buf,0,sizeof(buf));
+    if (read(sockfd,buf,sizeof(buf)) <=0) 
+    { 
+      printf("read() failed.\n");  close(sockfd);  return -1;
+    }
+
+    printf("recv:%s\n",buf);
+
+    // close(sockfd); break;
+  }
+} 
