@@ -1,5 +1,5 @@
 server:
-	g++ util.cpp client.cpp -o client && \
-	g++ util.cpp server.cpp -o server
+	g++ client.cpp -o client && \
+	g++ tcpepoll.cpp -o tcpepoll
 clean:
-	rm server && rm client
+	rm tcpepoll && rm client
