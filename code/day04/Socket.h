@@ -1,21 +1,25 @@
-#pragma once
+//
+// Created by mirac on 2022/10/4.
+//
+
+#ifndef UNTITLED_SOCKET_H
+#define UNTITLED_SOCKET_H
 
 class InetAddress;
-class Socket
-{
+class Socket{
 private:
-    int fd;
+    int listen_fd;
+    int client_fd;
+
 public:
     Socket();
-    Socket(int);
     ~Socket();
-
     void bind(InetAddress*);
-    void listen();
     void setnonblocking();
 
     int accept(InetAddress*);
-
-    int getFd();
+    void listen();
+    int getListen_fd();
+    int getClient_fd();
 };
-
+#endif //UNTITLED_SOCKET_H
