@@ -15,7 +15,7 @@
 Socket::Socket() : listen_fd(-1),client_fd(-1) {
     listen_fd = socket(AF_INET, SOCK_STREAM, 0);
     error_if(listen_fd==-1, "socket create failed");
-    //error_if(client_fd==-1, "socket init failed");
+//    error_if(client_fd==-1, "socket init failed");
 }
 
 /**
@@ -39,7 +39,6 @@ void Socket::listen() {
  * @return
  */
 int Socket::accept(InetAddress *addr) {
-    addr = new InetAddress();
     int client_fd = ::accept(listen_fd, (sockaddr*)addr, &addr->addr_len);
     error_if(client_fd == -1, "accept failed");
     return client_fd;
