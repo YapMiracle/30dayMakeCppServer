@@ -8,11 +8,13 @@
 class InetAddress;
 class Socket{
 private:
+
     int listen_fd;
     int client_fd;
 
 public:
     Socket();
+    Socket(int fd);
     ~Socket();
     void bind(InetAddress*);
     void setnonblocking();

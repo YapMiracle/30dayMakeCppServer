@@ -6,7 +6,7 @@
 #include "InetAddress.h"
 
 /**
- * 默认ip是INADDR_ANY，port是5005
+ * 
  */
 InetAddress::InetAddress() : addr_len(sizeof(addr)) {
     bzero(&addr, sizeof(addr));

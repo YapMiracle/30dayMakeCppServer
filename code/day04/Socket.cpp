@@ -19,6 +19,14 @@ Socket::Socket() : listen_fd(-1),client_fd(-1) {
 }
 
 /**
+ * 利用已经有的fd初始化
+ * @param fd
+ */
+Socket::Socket(int fd) : listen_fd(fd){
+    error_if(fd == -1, "socket create error");
+}
+
+/**
  * bind一个InetAddress
  * @param addr
  */
@@ -39,7 +47,7 @@ void Socket::listen() {
  * @return
  */
 int Socket::accept(InetAddress *addr) {
-    int client_fd = ::accept(listen_fd, (sockaddr*)addr, &addr->addr_len);
+    int client_fd = ::accept(listen_fd, (sockaddr*)&addr->addr, &addr->addr_len);
     error_if(client_fd == -1, "accept failed");
     return client_fd;
 }

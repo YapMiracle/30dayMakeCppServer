@@ -16,24 +16,34 @@ int main() {
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     serv_addr.sin_port = htons(5005);
-
-    error_if(connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1, "socket connect error");
+	int con=connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    error_if(con == -1, "socket connect error");
+    if(con>=0){
+    	printf("Client is connected!!\n");
+    }
     
     while(true){
-    	int iret;
         char buf[BUFFER_SIZE];
-        bzero(buf, sizeof(buf));
-        printf("Please input a string sended to server:");
+        bzero(&buf, sizeof(buf));
         scanf("%s", buf);
-        iret = send(sockfd, buf, sizeof(buf), 0);
-        error_if(iret<=0, "send error");
-        printf("Send: %s\n", buf);
-        bzero(buf, sizeof(buf));
-        iret = recv(sockfd, buf, sizeof(buf), 0);
-        error_if(iret<=0, "recv error");
-        printf("Recv: %s\n", buf);
-        
+        ssize_t write_bytes = write(sockfd, buf, sizeof(buf));
+        if(write_bytes == -1){
+            printf("socket already disconnected, can't write any more!\n");
+            break;
+        }
+        bzero(&buf, sizeof(buf));
+        ssize_t read_bytes = read(sockfd, buf, sizeof(buf));
+        if(read_bytes > 0){
+            printf("message from server: %s\n", buf);
+        }else if(read_bytes == 0){
+            printf("server socket disconnected!\n");
+            break;
+        }else if(read_bytes == -1){
+            close(sockfd);
+            error_if(true, "socket read error");
+        }
     }
+    close(sockfd);
     close(sockfd);
     return 0;
 }
