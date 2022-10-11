@@ -1,10 +1,12 @@
+//
+// Created by mirac on 2022/10/4.
+//
 #include "util.h"
 #include <stdio.h>
-#include <stdlib.h>
-
-void errif(bool condition, const char *errmsg){
+#include <cstdlib>
+void error_if(bool condition, const char* msg){
     if(condition){
-        perror(errmsg);
+        perror(msg);
         exit(EXIT_FAILURE);
     }
 }

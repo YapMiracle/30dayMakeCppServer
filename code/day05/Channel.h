@@ -1,28 +1,40 @@
-#pragma once
-#include <sys/epoll.h>
+//
+// Created by mirac on 2022/10/11.
+//
+
+#ifndef UNTITLED_CHANNEL_H
+#define UNTITLED_CHANNEL_H
+
+#include "Epoll.h"
 
 class Epoll;
-class Channel
-{
+class Channel {
 private:
-    Epoll *ep;
+    Epoll* ep;
     int fd;
     uint32_t events;
     uint32_t revents;
     bool inEpoll;
 public:
-    Channel(Epoll *_ep, int _fd);
+    Channel(Epoll* _ep, int _fd);
     ~Channel();
 
     void enableReading();
 
-    int getFd();
-    uint32_t getEvents();
-    uint32_t getRevents();
-    bool getInEpoll();
-    void setInEpoll();
+    int getFd() const;
 
-    // void setEvents(uint32_t);
-    void setRevents(uint32_t);
+    uint32_t getEvents() const;
+
+    //void setEvents(uint32_t events);
+
+    uint32_t getRevents() const;
+
+    void setRevents(uint32_t revents);
+
+    bool isInEpoll() const;
+
+    void setInEpoll();
 };
 
+
+#endif //UNTITLED_CHANNEL_H

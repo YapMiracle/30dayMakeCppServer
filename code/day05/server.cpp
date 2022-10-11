@@ -1,48 +1,46 @@
-#include <stdio.h>
-#include <string.h>
+#include <iostream>
+#include <strings.h>
+#include <cctype>
 #include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <vector>
-#include "util.h"
+#include <cstring>
+#include "Socket.h"
 #include "Epoll.h"
 #include "InetAddress.h"
-#include "Socket.h"
-#include "Channel.h"
+#include "util.h"
 
-#define MAX_EVENTS 1024
 #define READ_BUFFER 1024
+void handleReadEvent(int fd);
 
-void setnonblocking(int fd){
-    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
-}
-void handleReadEvent(int);
-
-int main() {
-    Socket *serv_sock = new Socket();
-    InetAddress *serv_addr = new InetAddress("127.0.0.1", 8888);
+int main(int argc, char* argv[]){
+    if(argc!=2){
+        printf("Usage: ./server port.\n");
+        return -1;
+    }
+    Socket* serv_sock = new Socket();
+    InetAddress* serv_addr = new InetAddress("127.0.0.1", 5005);
     serv_sock->bind(serv_addr);
-    serv_sock->listen();    
-    Epoll *ep = new Epoll();
+    serv_sock->listen();
+    Epoll* epoll = new Epoll();
     serv_sock->setnonblocking();
-    Channel *servChannel = new Channel(ep, serv_sock->getFd());
+    Channel *servChannel = new Channel(epoll, serv_sock->getListen_fd());
+//    epoll->addFd(serv_sock->getListen_fd(), EPOLLIN | EPOLLET);
     servChannel->enableReading();
     while(true){
-        std::vector<Channel*> activeChannels = ep->poll();
-        int nfds = activeChannels.size();
-        for(int i = 0; i < nfds; ++i){
-            int chfd = activeChannels[i]->getFd();
-            if(chfd == serv_sock->getFd()){        //新客户端连接
-                InetAddress *clnt_addr = new InetAddress();      //会发生内存泄露！没有delete
-                Socket *clnt_sock = new Socket(serv_sock->accept(clnt_addr));       //会发生内存泄露！没有delete
-                printf("new client fd %d! IP: %s Port: %d\n", clnt_sock->getFd(), inet_ntoa(clnt_addr->addr.sin_addr), ntohs(clnt_addr->addr.sin_port));
-                clnt_sock->setnonblocking();
-                Channel *clntChannel = new Channel(ep, clnt_sock->getFd());
-                clntChannel->enableReading();
-            } else if(activeChannels[i]->getRevents() & EPOLLIN){      //可读事件
-                handleReadEvent(activeChannels[i]->getFd());
-            } else{         //其他事件，之后的版本实现
-                printf("something else happened\n");
+        std::vector<Channel *> activeChannel = epoll->poll(0);
+        int nfds = activeChannel.size();
+        for(int i=0; i<nfds; i++){
+            int chfd = activeChannel[i]->getFd();
+            if(chfd == serv_sock->getListen_fd()) {
+                InetAddress* client_addr = new InetAddress();
+                Socket* client_sock = new Socket(serv_sock->accept(client_addr));
+                client_sock->setnonblocking();
+//                epoll->addFd(client_sock->getListen_fd(), EPOLLIN |EPOLLET);
+                Channel* clientChannel = new Channel(epoll, client_sock->getListen_fd());
+                clientChannel->enableReading();
+            } else if(chfd & EPOLLIN) {
+                handleReadEvent(chfd);
+            } else {
+                printf("Something else happened\n");
             }
         }
     }
@@ -50,15 +48,17 @@ int main() {
     delete serv_addr;
     return 0;
 }
-
-void handleReadEvent(int sockfd){
+void handleReadEvent(int fd){
     char buf[READ_BUFFER];
     while(true){    //由于使用非阻塞IO，读取客户端buffer，一次读取buf大小数据，直到全部读取完毕
         bzero(&buf, sizeof(buf));
-        ssize_t bytes_read = read(sockfd, buf, sizeof(buf));
+        ssize_t bytes_read = read(fd, buf, sizeof(buf));
         if(bytes_read > 0){
-            printf("message from client fd %d: %s\n", sockfd, buf);
-            write(sockfd, buf, sizeof(buf));
+            printf("message from client fd %d: %s\n", fd, buf);
+            for(int i=0; i<bytes_read; ++i){
+                buf[i] = toupper(buf[i]);
+            }
+            write(fd, buf, sizeof(buf));
         } else if(bytes_read == -1 && errno == EINTR){  //客户端正常中断、继续读取
             printf("continue reading");
             continue;
@@ -66,8 +66,8 @@ void handleReadEvent(int sockfd){
             printf("finish reading once, errno: %d\n", errno);
             break;
         } else if(bytes_read == 0){  //EOF，客户端断开连接
-            printf("EOF, client fd %d disconnected\n", sockfd);
-            close(sockfd);   //关闭socket会自动将文件描述符从epoll树上移除
+            printf("EOF, client fd %d disconnected\n", fd);
+            close(fd);   //关闭socket会自动将文件描述符从epoll树上移除
             break;
         }
     }
