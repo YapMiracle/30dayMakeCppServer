@@ -56,6 +56,11 @@ void Epoll::updateChannel(Channel *channel) {
     }
 }
 
+/**
+ * 设置有事件发生的Channel，检测共用的那个ep的树上有多少有事件发生的fd
+ * @param timeout
+ * @return
+ */
 std::vector<Channel *> Epoll::poll(int timeout) {
     std::vector<Channel*> activeChannels;
     int nfds = epoll_wait(epfd, events, MAX_EVENTS, timeout);
@@ -82,4 +87,3 @@ std::vector<Channel *> Epoll::poll(int timeout) {
 //    }
 //    return activeEvents;
 //}
-

@@ -22,10 +22,13 @@ int main(int argc, char* argv[]){
     serv_sock->listen();
     Epoll* epoll = new Epoll();
     serv_sock->setnonblocking();
+    // 一个Channel负责一个Epoll和一个监听的fd
     Channel *servChannel = new Channel(epoll, serv_sock->getListen_fd());
 //    epoll->addFd(serv_sock->getListen_fd(), EPOLLIN | EPOLLET);
+    // 设置监听的fd的事件
     servChannel->enableReading();
     while(true){
+        // 
         std::vector<Channel *> activeChannel = epoll->poll(0);
         int nfds = activeChannel.size();
         for(int i=0; i<nfds; i++){
@@ -35,6 +38,7 @@ int main(int argc, char* argv[]){
                 Socket* client_sock = new Socket(serv_sock->accept(client_addr));
                 client_sock->setnonblocking();
 //                epoll->addFd(client_sock->getListen_fd(), EPOLLIN |EPOLLET);
+                // 所有的channel都是使用一个ep
                 Channel* clientChannel = new Channel(epoll, client_sock->getListen_fd());
                 clientChannel->enableReading();
             } else if(chfd & EPOLLIN) {
