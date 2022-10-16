@@ -1,3 +1,7 @@
+//
+// Created by mirac on 2022/10/15.
+//
+
 #include "Server.h"
 #include "Socket.h"
 #include "InetAddress.h"
@@ -8,25 +12,33 @@
 
 #define READ_BUFFER 1024
 
-Server::Server(EventLoop *_loop) : loop(_loop){    
+/**
+ * 初始化一个监听fd
+ * @param _loop
+ */
+Server::Server(EventLoop *_loop) : loop(_loop){
     Socket *serv_sock = new Socket();
-    InetAddress *serv_addr = new InetAddress("127.0.0.1", 8888);
+    InetAddress *serv_addr = new InetAddress("127.0.0.1", 5005);
     serv_sock->bind(serv_addr);
-    serv_sock->listen(); 
+    serv_sock->listen();
     serv_sock->setnonblocking();
-       
-    Channel *servChannel = new Channel(loop, serv_sock->getFd());
-    std::function<void()> cb = std::bind(&Server::newConnection, this, serv_sock);
-    servChannel->setCallback(cb);
-    servChannel->enableReading();
+
+    Channel *servChannel = new Channel(loop, serv_sock->getListen_fd());//分发fd
+    std::function<void()> cb = std::bind(&Server::newConnection, this, serv_sock);//绑定新连接处理函数
+    servChannel->setCallback(cb);//设置回调函数
+    servChannel->enableReading();//设置事件、ET。
 
 }
 
 Server::~Server()
 {
-    
+
 }
 
+/**
+ * 处理读事件
+ * @param sockfd
+ */
 void Server::handleReadEvent(int sockfd){
     char buf[READ_BUFFER];
     while(true){    //由于使用非阻塞IO，读取客户端buffer，一次读取buf大小数据，直到全部读取完毕
@@ -49,13 +61,17 @@ void Server::handleReadEvent(int sockfd){
     }
 }
 
+/**
+ * 处理连接事件
+ * @param serv_sock
+ */
 void Server::newConnection(Socket *serv_sock){
     InetAddress *clnt_addr = new InetAddress();      //会发生内存泄露！没有delete
     Socket *clnt_sock = new Socket(serv_sock->accept(clnt_addr));       //会发生内存泄露！没有delete
-    printf("new client fd %d! IP: %s Port: %d\n", clnt_sock->getFd(), inet_ntoa(clnt_addr->addr.sin_addr), ntohs(clnt_addr->addr.sin_port));
+    printf("new client fd %d! IP: %s Port: %d\n", clnt_sock->getListen_fd(), inet_ntoa(clnt_addr->addr.sin_addr), ntohs(clnt_addr->addr.sin_port));
     clnt_sock->setnonblocking();
-    Channel *clntChannel = new Channel(loop, clnt_sock->getFd());
-    std::function<void()> cb = std::bind(&Server::handleReadEvent, this, clnt_sock->getFd());
+    Channel *clntChannel = new Channel(loop, clnt_sock->getListen_fd());
+    std::function<void()> cb = std::bind(&Server::handleReadEvent, this, clnt_sock->getListen_fd());
     clntChannel->setCallback(cb);
     clntChannel->enableReading();
 }

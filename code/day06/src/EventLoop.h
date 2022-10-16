@@ -1,8 +1,13 @@
-#pragma once
+//
+// Created by mirac on 2022/10/15.
+//
+
+#ifndef UNTITLED_EVENTLOOP_H
+#define UNTITLED_EVENTLOOP_H
+
 class Epoll;
 class Channel;
-class EventLoop
-{
+class EventLoop {
 private:
     Epoll *ep;
     bool quit;
@@ -14,3 +19,5 @@ public:
     void updateChannel(Channel*);
 };
 
+
+#endif //UNTITLED_EVENTLOOP_H
