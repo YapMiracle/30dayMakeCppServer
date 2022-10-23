@@ -1,20 +1,25 @@
+//
+// Created by mirac on 2022/10/23.
+//
 #include "Connection.h"
 #include "Socket.h"
 #include "Channel.h"
-#include <unistd.h>
-#include <string.h>
+#include <cstring> // bzero
+#include <unistd.h> // read
 #define READ_BUFFER 1024
-
-Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr){
-    channel = new Channel(loop, sock->getFd());
-    std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
+Connection::Connection(EventLoop* _loop, Socket* _sock):loop(_loop), sock(_sock) {
+    channel = new Channel(loop, sock->getListen_fd());
+    std::function<void ()> cb = std::bind(&Connection::echo, this, sock->getListen_fd());
     channel->setCallback(cb);
     channel->enableReading();
 }
 
-Connection::~Connection(){
+Connection::~Connection() {
     delete channel;
+    channel=nullptr;
+
     delete sock;
+    sock=nullptr;
 }
 
 void Connection::echo(int sockfd){
@@ -40,6 +45,6 @@ void Connection::echo(int sockfd){
     }
 }
 
-void Connection::setDeleteConnectionCallback(std::function<void(Socket*)> _cb){
+void Connection::setDeleteConnectionCallback(std::function<void (Socket*)> _cb){
     deleteConnectionCallback = _cb;
 }
