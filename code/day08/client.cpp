@@ -9,18 +9,18 @@
 
 int main() {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    errif(sockfd == -1, "socket create error");
+    error_if(sockfd == -1, "socket create error");
 
     struct sockaddr_in serv_addr;
     bzero(&serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    serv_addr.sin_port = htons(1234);
+    serv_addr.sin_port = htons(5005);
 
-    errif(connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) == -1, "socket connect error");
+    error_if(connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) == -1, "socket connect error");
     
     while(true){
-        char buf[BUFFER_SIZE];  //在这个版本，buf大小必须大于或等于服务器端buf大小，不然会出错，想想为什么？
+        char buf[BUFFER_SIZE];
         bzero(&buf, sizeof(buf));
         scanf("%s", buf);
         ssize_t write_bytes = write(sockfd, buf, sizeof(buf));
@@ -37,7 +37,7 @@ int main() {
             break;
         }else if(read_bytes == -1){
             close(sockfd);
-            errif(true, "socket read error");
+            error_if(true, "socket read error");
         }
     }
     close(sockfd);

@@ -1,9 +1,16 @@
-#pragma once
-#include <sys/epoll.h>
+//
+// Created by mirac on 2022/10/11.
+//
+
+#ifndef UNTITLED_CHANNEL_H
+#define UNTITLED_CHANNEL_H
+
+#include "Epoll.h"
+#include "EventLoop.h"
 #include <functional>
-class EventLoop;
-class Channel
-{
+
+class Epoll;
+class Channel {
 private:
     EventLoop *loop;
     int fd;
@@ -12,20 +19,21 @@ private:
     bool inEpoll;
     std::function<void()> callback;
 public:
-    Channel(EventLoop *_loop, int _fd);
+    Channel(EventLoop* _loop, int _fd);
     ~Channel();
 
     void handleEvent();
     void enableReading();
 
-    int getFd();
-    uint32_t getEvents();
-    uint32_t getRevents();
-    bool getInEpoll();
+    int getFd() const;
+    uint32_t getEvents() const;
+    //void setEvents(uint32_t events);
+    uint32_t getRevents() const;
+    void setRevents(uint32_t revents);
+    bool isInEpoll() const;
     void setInEpoll();
-
-    // void setEvents(uint32_t);
-    void setRevents(uint32_t);
     void setCallback(std::function<void()>);
 };
 
+
+#endif //UNTITLED_CHANNEL_H

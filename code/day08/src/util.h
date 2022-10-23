@@ -1,6 +1,9 @@
-#ifndef UTIL_H
-#define UTIL_H
+//
+// Created by mirac on 2022/10/4.
+//
 
-void errif(bool, const char*);
+#ifndef UNTITLED_UTIL_H
+#define UNTITLED_UTIL_H
 
-#endif
+void error_if(bool, const char*);
+#endif //UNTITLED_UTIL_H
