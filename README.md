@@ -2,6 +2,8 @@
 
 ## 如访问慢，可以到这里观看：[csblog](https://csblog.cc)
 
+## 超过了1k star，今天起开始续更
+
 教程的配套网络库：[pine](https://github.com/yuesong-feng/pine)，star and fork!
 
 先说结论：不管使用什么语言，一切后台开发的根基，是面向Linux的C/C++服务器开发。
@@ -50,9 +52,9 @@ C/C++学习的一个难点在于初学时无法做出实际上的东西，没有
 
 [day14-支持业务逻辑自定义、完善Connection类](https://github.com/yuesong-feng/30dayMakeCppServer/blob/main/day14-支持业务逻辑自定义、完善Connection类.md)
 
-[day15-macOS、FreeBSD支持](https://github.com/yuesong-feng/30dayMakeCppServer/blob/main/day15-macOS、FreeBSD支持.md)
+[day15-macOS支持、完善业务逻辑自定义](https://github.com/yuesong-feng/30dayMakeCppServer/blob/main/day15-macOS支持、完善业务逻辑自定义.md)
 
-[day16-完善业务逻辑自定义](https://github.com/yuesong-feng/30dayMakeCppServer/blob/main/blob/main/day16-完善业务逻辑自定义.md)
+[day16-重构服务器、使用智能指针](https://github.com/yuesong-feng/30dayMakeCppServer/blob/main/day16-重构核心库、使用智能指针.md)
 
 ### todo list
 
