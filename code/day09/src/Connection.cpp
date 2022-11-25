@@ -29,6 +29,10 @@ Connection::~Connection() {
     readBuffer=nullptr;
 }
 
+/**
+ * 使用了buffer
+ * 代码量差不多
+ */
 void Connection::echo(int sockfd){
     char buf[READ_BUFFER];
     while(true){    //由于使用非阻塞IO，读取客户端buffer，一次读取buf大小数据，直到全部读取完毕
