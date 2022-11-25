@@ -71,6 +71,9 @@ void Server::newConnection(Socket *serv_sock){
     clntChannel->enableReading();
 }
 
+/**
+ * 删除map中的一个connection
+ */
 void Server::deleteConnection(Socket *sock) {
     Connection * connection = connections[sock->getListen_fd()];
     connections.erase(sock->getListen_fd());

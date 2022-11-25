@@ -1,6 +1,6 @@
 //
 // Created by mirac on 2022/10/23.
-//
+// 管理一个服务器下的连接的Sock
 
 #ifndef UNTITLED_CONNECTION_H
 #define UNTITLED_CONNECTION_H
