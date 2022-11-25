@@ -1,8 +1,12 @@
-#pragma once
-#include <arpa/inet.h>
+//
+// Created by mirac on 2022/10/4.
+//
 
-class InetAddress
-{
+#ifndef UNTITLED_INETADDRESS_H
+#define UNTITLED_INETADDRESS_H
+
+#include <arpa/inet.h>
+class InetAddress{
 private:
     struct sockaddr_in addr;
     socklen_t addr_len;
@@ -14,4 +18,4 @@ public:
     sockaddr_in getAddr();
     socklen_t getAddr_len();
 };
-
+#endif //UNTITLED_INETADDRESS_H
