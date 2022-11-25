@@ -1,22 +1,28 @@
-#pragma once
-#include <functional>
+//
+// Created by mirac on 2022/10/15.
+//
 
+#ifndef UNTITLED_EVENTLOOP_H
+#define UNTITLED_EVENTLOOP_H
+
+#include <functional>
 class Epoll;
 class Channel;
-class ThreadPoll;
-class EventLoop
-{
+class ThreadPool;
+class EventLoop {
 private:
     Epoll *ep;
-    ThreadPoll *threadPoll;
+    ThreadPool *threadPool;
     bool quit;
 public:
     EventLoop();
     ~EventLoop();
 
     void loop();
-    void updateChannel(Channel*);
 
+    void updateChannel(Channel*);
     void addThread(std::function<void()>);
 };
 
+
+#endif //UNTITLED_EVENTLOOP_H

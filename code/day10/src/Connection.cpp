@@ -1,27 +1,40 @@
+//
+// Created by mirac on 2022/10/23.
+//
 #include "Connection.h"
 #include "Socket.h"
 #include "Channel.h"
-#include "util.h"
+#include <cstring> // bzero
+#include <unistd.h> // read
 #include "Buffer.h"
-#include <unistd.h>
-#include <string.h>
-#include <iostream>
+#include "util.h"
 
-Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr), inBuffer(new std::string()), readBuffer(nullptr){
+#define READ_BUFFER 1024
+Connection::Connection(EventLoop* _loop, Socket* _sock):loop(_loop), sock(_sock) {
     channel = new Channel(loop, sock->getFd());
-    std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
+    std::function<void ()> cb = std::bind(&Connection::echo, this, sock->getFd());
     channel->setCallback(cb);
     channel->enableReading();
     readBuffer = new Buffer();
 }
 
-Connection::~Connection(){
+Connection::~Connection() {
     delete channel;
+    channel=nullptr;
+
     delete sock;
+    sock=nullptr;
+
+    delete readBuffer;
+    readBuffer=nullptr;
 }
 
+/**
+ * 使用了buffer
+ * 代码量差不多
+ */
 void Connection::echo(int sockfd){
-    char buf[1024];     //这个buf大小无所谓
+    char buf[READ_BUFFER];
     while(true){    //由于使用非阻塞IO，读取客户端buffer，一次读取buf大小数据，直到全部读取完毕
         bzero(&buf, sizeof(buf));
         ssize_t bytes_read = read(sockfd, buf, sizeof(buf));
@@ -31,9 +44,9 @@ void Connection::echo(int sockfd){
             printf("continue reading");
             continue;
         } else if(bytes_read == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))){//非阻塞IO，这个条件表示数据全部读取完毕
-            printf("finish reading once\n");
-            printf("message from client fd %d: %s\n", sockfd, readBuffer->c_str());
-            errif(write(sockfd, readBuffer->c_str(), readBuffer->size()) == -1, "socket write error");
+            printf("finish reading once, errno: %d\n", errno);
+            printf("message from client fd %d: %s\n", sockfd, buf);
+            error_if(write(sockfd, readBuffer->c_str(), readBuffer->size())==-1, "write error");
             readBuffer->clear();
             break;
         } else if(bytes_read == 0){  //EOF，客户端断开连接
@@ -45,6 +58,6 @@ void Connection::echo(int sockfd){
     }
 }
 
-void Connection::setDeleteConnectionCallback(std::function<void(Socket*)> _cb){
+void Connection::setDeleteConnectionCallback(std::function<void (Socket*)> _cb){
     deleteConnectionCallback = _cb;
 }
