@@ -13,7 +13,9 @@ Channel::~Channel() {
 
 }
 
-// 回调函数
+/**
+ * 处理事件，在server中绑定了回调函数
+ */
 void Channel::handleEvent() {
     callback();
 }
