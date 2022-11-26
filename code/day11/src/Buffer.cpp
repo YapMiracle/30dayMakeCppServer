@@ -1,41 +1,38 @@
-/******************************
-*   author: yuesong-feng
-*   
-*
-*
-******************************/
-#include "Buffer.h"
-#include <string.h>
+//
+// Created by mirac on 2022/10/24.
+//
+
 #include <iostream>
-Buffer::Buffer() {}
+#include "Buffer.h"
 
-Buffer::~Buffer() {}
+Buffer::Buffer(){
 
-void Buffer::append(const char* _str, int _size){
-    for(int i = 0; i < _size; ++i){
-        if(_str[i] == '\0') break;
-        buf.push_back(_str[i]);
+}
+
+Buffer::~Buffer() {
+
+}
+
+void Buffer::append(const char *str, int _size) {
+    for(int i=0; i<_size; i++){
+        if(str[i]=='\0') break;
+        buf.push_back(str[i]);
     }
 }
 
-ssize_t Buffer::size(){
+ssize_t Buffer::size() {
     return buf.size();
 }
 
-const char* Buffer::c_str(){
-    return buf.c_str();
+char* Buffer::c_str() const {
+    return const_cast<char *>(buf.c_str());
 }
 
-void Buffer::clear(){
+void Buffer::clear() {
     buf.clear();
 }
 
-void Buffer::getline(){
+void Buffer::getline() {
     buf.clear();
     std::getline(std::cin, buf);
-}
-
-void Buffer::setBuf(const char* _buf){
-    buf.clear();
-    buf.append(_buf);
 }

@@ -1,9 +1,3 @@
-/******************************
-*   author: yuesong-feng
-*   
-*
-*
-******************************/
 #pragma once
 #include <string>
 
@@ -14,12 +8,10 @@ private:
 public:
     Buffer();
     ~Buffer();
-    
     void append(const char* _str, int _size);
     ssize_t size();
-    const char* c_str();
+     char* c_str() const;
     void clear();
     void getline();
-    void setBuf(const char*);
 };
 

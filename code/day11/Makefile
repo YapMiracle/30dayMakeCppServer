@@ -1,3 +1,4 @@
+.PHONY: server client th test clean
 src=$(wildcard src/*.cpp)
 
 server:

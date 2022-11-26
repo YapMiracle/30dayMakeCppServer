@@ -1,31 +1,33 @@
-/******************************
-*   author: yuesong-feng
-*   
-*
-*
-******************************/
+//
+// Created by mirac on 2022/10/15.
+//
+
 #include "EventLoop.h"
 #include "Epoll.h"
 #include "Channel.h"
 #include "ThreadPool.h"
-#include <vector>
 
-EventLoop::EventLoop() : ep(nullptr), threadPool(nullptr), quit(false){
+/**
+ * 管理一个Epoll，
+ * 和一个事件处理线程池
+ */
+EventLoop::EventLoop():ep(nullptr), threadPool(nullptr), quit(false) {
     ep = new Epoll();
-    threadPool = new ThreadPool();
+    threadPool = new ThreadPool();// default size =10.
 }
 
-EventLoop::~EventLoop(){
-    delete threadPool;
+EventLoop::~EventLoop() {
     delete ep;
 }
 
-
-void EventLoop::loop(){
+/**
+ * 处理事件循环
+ */
+void EventLoop::loop() {
     while(!quit){
-    std::vector<Channel*> chs;
+        std::vector<Channel*> chs;
         chs = ep->poll();
-        for(auto it = chs.begin(); it != chs.end(); ++it){
+        for(auto it = chs.begin(); it!=chs.end(); it++) {
             (*it)->handleEvent();
         }
     }

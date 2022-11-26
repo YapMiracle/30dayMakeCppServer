@@ -1,39 +1,38 @@
-/******************************
-*   author: yuesong-feng
-*   
-*
-*
-******************************/
+//
+// Created by mirac on 2022/10/23.
+//
 #include "Connection.h"
 #include "Socket.h"
 #include "Channel.h"
-#include "util.h"
+#include <cstring> // bzero
+#include <unistd.h> // read
 #include "Buffer.h"
-#include <unistd.h>
-#include <string.h>
-#include <iostream>
+#include "util.h"
 
-Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr), inBuffer(new std::string()), readBuffer(nullptr){
+#define READ_BUFFER 1024
+Connection::Connection(EventLoop* _loop, Socket* _sock):loop(_loop), sock(_sock) {
     channel = new Channel(loop, sock->getFd());
-    channel->enableRead();
-    channel->useET();
-    std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
+    std::function<void ()> cb = std::bind(&Connection::echo, this, sock->getFd());
     channel->setReadCallback(cb);
     channel->setUseThreadPool(true);
     readBuffer = new Buffer();
 }
 
-Connection::~Connection(){
+Connection::~Connection() {
     delete channel;
+    channel=nullptr;
+
     delete sock;
+    sock=nullptr;
+
     delete readBuffer;
+    readBuffer=nullptr;
 }
 
-void Connection::setDeleteConnectionCallback(std::function<void(int)> _cb){
-    deleteConnectionCallback = _cb;
-}
-
-
+/**
+ * 使用了buffer
+ * 代码量差不多
+ */
 void Connection::echo(int sockfd){
     char buf[1024];     //这个buf大小无所谓
     while(true){    //由于使用非阻塞IO，读取客户端buffer，一次读取buf大小数据，直到全部读取完毕
@@ -62,17 +61,22 @@ void Connection::echo(int sockfd){
     }
 }
 
+void Connection::setDeleteConnectionCallback(std::function<void (int)> _cb){
+    deleteConnectionCallback = _cb;
+}
+
 void Connection::send(int sockfd){
     char buf[readBuffer->size()];
     strcpy(buf, readBuffer->c_str());
-    int  data_size = readBuffer->size(); 
-    int data_left = data_size; 
-    while (data_left > 0) 
-    { 
-        ssize_t bytes_write = write(sockfd, buf + data_size - data_left, data_left); 
-        if (bytes_write == -1 && errno == EAGAIN) { 
+    int  data_size = readBuffer->size();
+    int data_left = data_size;
+    while (data_left > 0)
+    {
+        ssize_t bytes_write = write(sockfd, buf + data_size - data_left, data_left);
+        if (bytes_write == -1 && errno == EAGAIN) {
             break;
         }
-        data_left -= bytes_write; 
+        data_left -= bytes_write;
     }
 }
+

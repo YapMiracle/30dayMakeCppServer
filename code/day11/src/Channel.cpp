@@ -1,73 +1,79 @@
-/******************************
-*   author: yuesong-feng
-*   
-*
-*
-******************************/
+//
+// Created by mirac on 2022/10/11.
+//
+
+#include <unistd.h>
 #include "Channel.h"
 #include "EventLoop.h"
-#include "Socket.h"
-#include <unistd.h>
-#include <sys/epoll.h>
 
-Channel::Channel(EventLoop *_loop, int _fd) 
-    : loop(_loop), fd(_fd), events(0), ready(0), inEpoll(false), useThreadPool(true){}
+Channel::Channel(EventLoop* _loop, int _fd)
+        : loop(_loop), fd(_fd), events(0), ready(0),
+        inEpoll(false),useThreadPool(false) {
 
-Channel::~Channel(){
-    if(fd != -1){
+}
+
+Channel::~Channel() {
+    if(fd!=-1){
         close(fd);
-        fd = -1;
+        fd=-1;
     }
 }
 
-void Channel::handleEvent(){
+// 回调函数
+void Channel::handleEvent() {
     if(ready & (EPOLLIN | EPOLLPRI)){
-        if(useThreadPool)       
+        if(useThreadPool){
             loop->addThread(readCallback);
-        else
+        } else{
             readCallback();
+        }
     }
     if(ready & (EPOLLOUT)){
-        if(useThreadPool)       
+        if(useThreadPool){
             loop->addThread(writeCallback);
-        else
+        } else {
             writeCallback();
+        }
     }
-
 }
 
-void Channel::enableRead(){
-    events |= EPOLLIN | EPOLLPRI;
+void Channel::enableRead() {
+    events = EPOLLIN | EPOLLET;
     loop->updateChannel(this);
 }
 
-void Channel::useET(){
-    events |= EPOLLET;
+void Channel::useET() {
+    events |=EPOLLET;
     loop->updateChannel(this);
 }
-int Channel::getFd(){
+
+int Channel::getFd() const {
     return fd;
 }
 
-uint32_t Channel::getEvents(){
+uint32_t Channel::getEvents() const {
     return events;
 }
-uint32_t Channel::getReady(){
+
+uint32_t Channel::getReady() const {
     return ready;
 }
 
-bool Channel::getInEpoll(){
+void Channel::setReady(uint32_t ev) {
+    ready = ev;
+}
+bool Channel::isInEpoll() const {
     return inEpoll;
 }
 
-void Channel::setInEpoll(bool _in){
+void Channel::setInEpoll(bool _in) {
     inEpoll = _in;
 }
 
-void Channel::setReady(uint32_t _ev){
-    ready = _ev;
-}
-
+/**
+ * 设置回调函数
+ * @param _cb
+ */
 void Channel::setReadCallback(std::function<void()> _cb){
     readCallback = _cb;
 }
